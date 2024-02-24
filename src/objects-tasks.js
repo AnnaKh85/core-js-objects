@@ -399,34 +399,97 @@ function group(array, keySelector, valueSelector) {
  *  For more examples see unit tests.
  */
 
-const cssSelectorBuilder = {
+class BaseSelector {
+  constructor(value = '', prefix = '', order = 0) {
+    this.value = value;
+    this.prefix = prefix;
+    this.order = order;
+  }
+
+  stringify() {
+    return this.prefix + this.value;
+  }
+
+  checkOrder(order) {
+    if (this.order >= order) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    this.order = order;
+  }
 
   element(value) {
+    this.checkOrder(1);
+    return new BaseSelector(value, this.stringify(), 1);
+  }
 
+  id(value) {
+    this.checkOrder(2);
+    return new BaseSelector(value, this.stringify(), 2);
+  }
+
+  class(value) {
+    this.checkOrder(3);
+    return new BaseSelector(value, this.stringify(), 3);
+  }
+
+  attr(value) {
+    this.checkOrder(4);
+    return new BaseSelector(value, this.stringify(), 4);
+  }
+
+  pseudoClass(value) {
+    this.checkOrder(5);
+    return new BaseSelector(value, this.stringify(), 5);
+  }
+
+  pseudoElement(value) {
+    this.checkOrder(6);
+    return new BaseSelector(value, this.stringify(), 6);
+  }
+
+  combine(selector1, combinator, selector2) {
+    this.checkOrder(7);
+    return new BaseSelector(
+      `${selector1.stringify()} ${combinator} ${selector2.stringify()}`,
+      this.stringify(),
+      7
+    );
+  }
+}
+
+const cssSelectorBuilder = {
+  element(value) {
+    return new BaseSelector(value);
   },
 
   id(value) {
-
+    return new BaseSelector(value, '', 2);
   },
 
   class(value) {
-
+    return new BaseSelector(value, '', 3);
   },
 
   attr(value) {
-
+    return new BaseSelector(value, '', 4);
   },
 
   pseudoClass(value) {
-
+    return new BaseSelector(value, '', 5);
   },
 
   pseudoElement(value) {
-
+    return new BaseSelector(value, '', 6);
   },
 
   combine(selector1, combinator, selector2) {
-
+    return new BaseSelector(
+      `${selector1.stringify()} ${combinator} ${selector2.stringify()}`,
+      '',
+      7
+    );
   },
 };
 
